@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half-Life 2 Rebuild</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0f1a;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #youtube-menu, #credits-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+        #youtube-menu.open, #credits-menu.open {
+            max-height: 1200px;
+            opacity: 1;
+            margin-top: 1.5rem;
+        }
+        .channel-card, .credit-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+        .channel-card:hover, .credit-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .clickable-credit {
+            cursor: pointer;
+        }
+
+        /* Special highlighting for TheMaster974 */
+        .master-contributor {
+            background: linear-gradient(135deg, rgba(255, 90, 0, 0.15) 0%, rgba(255, 0, 128, 0.1) 100%) !important;
+            border: 1px solid rgba(255, 90, 0, 0.4) !important;
+            box-shadow: 0 0 15px rgba(255, 90, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .master-contributor::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: rotate(45deg);
+            animation: shine 4s infinite;
+        }
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        /* Toast Message Style */
+        #toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #ff5a00;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 30px rgba(255, 90, 0, 0.4);
+            font-weight: 700;
+            font-size: 14px;
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein_toast 0.5s, fadeout_toast 0.5s 4.5s;
+        }
+        @keyframes fadein_toast {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout_toast {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+
+        .avatar-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #05080f;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .highlight {
+            color: #ff5a00;
+            font-weight: 500;
+        }
+        .top-section {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .gif-background {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%);
+            opacity: 0.001; 
+            transition: opacity 2s ease-in-out;
+        }
+        
+        .gif-background.active {
+            opacity: 0.4;
+        }
+
+        .top-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(10, 15, 26, 0.1) 0%, rgba(10, 15, 26, 0.8) 100%);
+            z-index: 1;
+        }
+        
+        .logo-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: -20px;
+        }
+
+        @media (min-width: 768px) {
+            .logo-wrapper {
+                height: 450px;
+            }
+        }
+
+        .top-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .credits-scroll::-webkit-scrollbar { width: 4px; }
+        .credits-scroll::-webkit-scrollbar-thumb { background: #ff5a00; border-radius: 10px; }
+        .credits-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="text-white">
+
+    <!-- Notification Toast -->
+    <div id="toast">Message</div>
+
+    <div class="top-section" id="bg-container">
+        <div class="gif-background active" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1768841816661_1.gif');"></div>
+        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764670000299_1.gif');"></div>
+        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764668340099_1.gif');"></div>
+        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764671461201.gif');"></div>
+        
+        <div class="top-content fade-in text-center">
+            <div class="logo-wrapper">
+                <img src="https://media.discordapp.net/attachments/1464443523620409542/1464443588908679189/DADWADAWD_b.png?ex=69757cdf&is=69742b5f&hm=bd57e05581d676786bbc3aadf15aa6925322fceed22539673defaa480bc38389&=&format=webp&quality=lossless" 
+                     alt="Half-Life 2 Rebuild Logo" 
+                     class="w-[400px] md:w-[650px] object-contain pointer-events-none drop-shadow-[0_0_35px_rgba(255,90,0,0.2)]" 
+                     onerror="this.src='https://placehold.co/512x512/1a1f2e/orange?text=HL2R'">
+            </div>
+            
+            <div class="max-w-3xl mx-auto px-2 space-y-2">
+                <p class="text-gray-300 leading-relaxed text-sm md:text-base">
+                    is a modification that Aims to <span class="highlight">improve half-life 2's mostly stale combat system</span> compared to the original Half-life(1998), inspired by mods like <span class="highlight">Halt-life 2: MMod and Smod</span>, Half-life 2: Rebuild adds, <span class="highlight">new weapons</span>, nev visual improvements, <span class="highlight">general more fluid feel</span> and A more fun experience for the player, The mods combat has been designed similarly to <span class="highlight">Quake/Classic Doom style</span>, it feels much <span class="highlight">faster</span> then default hl2 or even hl1.
+                </p>
+                <p class="text-gray-400 leading-relaxed text-sm md:text-base font-light">
+                    The mod includes <span class="highlight">all of hl2's campaign and it's episodes</span> packaged into one single experience for the players and modding convenience, Half-life 2 rebuild is also a <span class="highlight">modbase</span>, to jumpstart any mod you want, you can call it <span class="highlight">"Mmod with open source code"</span> if you want to.
+                </p>
+            </div>
+
+            <div class="flex flex-col items-center gap-3 w-full mt-8">
+                <a href="https://www.moddb.com/mods/half-life-2-rebuild1/downloads" target="_blank" class="w-64 md:w-80">
+                    <button class="w-full py-3.5 rounded-full bg-[#ff5a00] text-white font-bold uppercase tracking-[0.15em] transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-3 shadow-lg shadow-orange-900/20">
+                        <img src="https://media.moddb.com/cache/images/members/4/3399/3398047/thumb_620x2000/1.png" alt="ModDB" class="h-5 w-auto">
+                        Download
+                    </button>
+                </a>
+                
+                <a href="https://github.com/ValveSoftware/source-sdk-2013/tree/singleplayer" target="_blank" class="w-64 md:w-80">
+                    <button class="w-full py-3.5 rounded-full bg-[#24292e] text-white font-bold uppercase tracking-[0.15em] transition-all hover:bg-[#2f363d] active:scale-95 flex items-center justify-center gap-3">
+                        <i class="fa-brands fa-github text-xl"></i>
+                        Source Code
+                    </button>
+                </a>
+
+                <button onclick="toggleCredits()" class="w-64 md:w-80 py-3.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-[0.15em] transition-all hover:bg-white/15 hover:text-white active:scale-95 flex items-center justify-center gap-3 border border-white/5">
+                    <i class="fa-solid fa-users text-sm"></i>
+                    Credits
+                </button>
+
+                <div id="credits-menu" class="w-full max-w-lg">
+                    <div class="credits-scroll grid gap-2 text-left mt-2 max-h-[400px] overflow-y-auto px-2 pb-4">
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-orange-500">
+                            <p class="text-[10px] text-orange-500 uppercase font-bold tracking-widest mb-1">Tau Guy</p>
+                            <p class="text-sm">Lead-Dev, Mapper, VGUI editor, Hud editor, Moddb page handler, Models.</p>
+                        </div>
+                        <div onclick="showToast('Yeah, that\'s me! The coder of Rebuild and this website :3')" class="credit-card clickable-credit p-3 rounded-lg border-l-2 border-l-blue-500">
+                            <p class="text-[10px] text-blue-500 uppercase font-bold tracking-widest mb-1">Niko</p>
+                            <p class="text-sm">Lead-Dev, coding.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">3037</p>
+                            <p class="text-sm">Model fixes, tips, Beta Tester.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">MTB</p>
+                            <p class="text-sm">All Models Weapon Animations.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">thatmoodyguy</p>
+                            <p class="text-sm">Materials for the Tau Cannon.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Blueflytrap</p>
+                            <p class="text-sm">Crowbar Model and Materials.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Gunship Mark II</p>
+                            <p class="text-sm">Dismountable Tau Cannon code.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">APERTURE_AEROSPACE</p>
+                            <p class="text-sm">Oicw model.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Lt.Rocky x Apollo</p>
+                            <p class="text-sm">OICW'S animations.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Lambda Fox</p>
+                            <p class="text-sm">Improved buggy.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Munancho_Inc</p>
+                            <p class="text-sm">Original HLA alyx gun model.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Metrodev</p>
+                            <p class="text-sm">Flechette gun ammo concept, flechette gun model fix.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">FelineGonePostal</p>
+                            <p class="text-sm">Beta Tester.</p>
+                        </div>
+                        <div onclick="showToast('If it weren\'t for TheMaster974, 70% of the Rebuild wouldn\'t exist. Thank you! ❤')" class="credit-card master-contributor clickable-credit p-3 rounded-lg border-l-2 border-l-orange-500">
+                            <div class="relative z-10">
+                                <p class="text-[10px] text-orange-400 uppercase font-black tracking-[0.2em] mb-1 drop-shadow-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-star text-[8px]"></i> TheMaster974
+                                </p>
+                                <p class="text-sm font-medium text-white/90 drop-shadow-md italic">Coding tips, dynamic lightning, ironsights, etc.</p>
+                            </div>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Mazdo and Donald</p>
+                            <p class="text-sm">The thing and The thing remastered Campaign.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Macky</p>
+                            <p class="text-sm">Weapon Materials.</p>
+                        </div>
+                        <div class="credit-card p-3 rounded-lg border-l-2 border-l-gray-400">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Poki</p>
+                            <p class="text-sm">EP1/2 Mossman fix.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto py-12 px-4 space-y-16">
+        <div class="pt-8 border-t border-white/5 flex flex-col items-center">
+            <span class="text-[11px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-6">Official Socials</span>
+            <div class="flex items-center gap-12">
+                <button onclick="toggleYoutube()" class="group flex flex-col items-center gap-2">
+                    <i class="fa-brands fa-youtube text-gray-500 group-hover:text-red-500 transition-colors text-3xl"></i>
+                    <span class="text-[10px] text-gray-600 uppercase tracking-widest font-bold">YouTube</span>
+                </button>
+                <a href="https://discord.gg/SYzapBTNfU" target="_blank" class="group flex flex-col items-center gap-2">
+                    <i class="fa-brands fa-discord text-gray-500 group-hover:text-indigo-400 transition-colors text-3xl"></i>
+                    <span class="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Discord</span>
+                </a>
+            </div>
+            <div id="youtube-menu" class="w-full max-w-md"><div id="channels-list" class="grid gap-3 mt-6"></div></div>
+        </div>
+
+        <div class="flex flex-col items-center">
+            <h2 class="text-xl font-bold uppercase tracking-[0.25em] text-orange-500 mb-8">Take Look At Is</h2>
+            <div class="w-full space-y-8">
+                <div class="video-container shadow-2xl border border-white/5">
+                    <iframe src="https://www.youtube.com/embed/TfoRkjHqsmM" title="Gameplay 1" allowfullscreen></iframe>
+                </div>
+                <div class="video-container shadow-2xl border border-white/5">
+                    <iframe src="https://www.youtube.com/embed/rB4kG5C-Xf8" title="Gameplay 2" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pt-12 pb-12 text-gray-700 text-[10px] tracking-[0.5em] uppercase font-bold text-center">
+            Rebuild Team © 2026
+        </footer>
+    </div>
+
+    <script>
+        const config = [
+            { handle: 'hl2rebuild', role: 'Official Project Channel' },
+            { handle: 'tauguyut', role: 'Lead-dev' },
+            { handle: 'pizdachek', role: 'Lead-dev' }
+        ];
+
+        let currentGifIndex = 0;
+        const gifs = document.querySelectorAll('.gif-background');
+        
+        function cycleBackgrounds() {
+            gifs[currentGifIndex].classList.remove('active');
+            currentGifIndex = (currentGifIndex + 1) % gifs.length;
+            gifs[currentGifIndex].classList.add('active');
+        }
+
+        function toggleYoutube() {
+            document.getElementById('youtube-menu').classList.toggle('open');
+            document.getElementById('credits-menu').classList.remove('open');
+        }
+
+        function toggleCredits() {
+            document.getElementById('credits-menu').classList.toggle('open');
+            document.getElementById('youtube-menu').classList.remove('open');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 5000);
+        }
+
+        async function init() {
+            const list = document.getElementById('channels-list');
+            list.innerHTML = '';
+            config.forEach(item => {
+                const card = document.createElement('a');
+                card.href = `https://youtube.com/@${item.handle}`;
+                card.target = '_blank';
+                card.className = 'channel-card flex items-center p-3 rounded-lg group fade-in';
+                card.innerHTML = `
+                    <img src="https://unavatar.io/youtube/${item.handle}" class="avatar-img" alt="${item.handle}">
+                    <div class="ml-4">
+                        <div class="text-sm font-bold">@${item.handle}</div>
+                        <div class="text-[9px] text-gray-600 uppercase font-bold">${item.role}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right ml-auto text-gray-800 group-hover:text-white transition-colors text-xs"></i>
+                `;
+                list.appendChild(card);
+            });
+            
+            setInterval(cycleBackgrounds, 8000);
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
