@@ -196,6 +196,22 @@
             flex-direction: column;
             align-items: center;
         }
+        .youtube-bg {
+        position: relative;
+        overflow: hidden;
+        background-color: black;
+        }
+        
+        .youtube-bg iframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        height: 100vh;
+        transform: translate(-50%, -50%) scale(1.2);
+        pointer-events: none;
+        border: none;
+        }
         .credits-scroll::-webkit-scrollbar { width: 4px; }
         .credits-scroll::-webkit-scrollbar-thumb { background: #ff5a00; border-radius: 10px; }
         .credits-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
@@ -206,15 +222,20 @@
     <!-- Notification Toast -->
     <div id="toast">Message</div>
 
-    <div class="top-section" id="bg-container">
-        <div class="gif-background active" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1768841816661_1.gif');"></div>
-        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764670000299_1.gif');"></div>
-        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764668340099_1.gif');"></div>
-        <div class="gif-background" style="background-image: url('https://media.moddb.com/cache/images/mods/1/61/60466/thumb_620x2000/clip_1764671461201.gif');"></div>
+<div class="top-section" id="bg-container">
+    <div class="gif-background active youtube-bg">
+        <iframe 
+            src="https://www.youtube.com/embed/1Y9xH9kXf2E?autoplay=1&mute=1&controls=0&loop=1&playlist=1Y9xH9kXf2E&rel=0&showinfo=0&disablekb=1&playsinline=1" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media" 
+            allowfullscreen>
+        </iframe>
+    </div>
+</div>
         
         <div class="top-content fade-in text-center">
             <div class="logo-wrapper">
-                <img src="https://media.discordapp.net/attachments/1464443523620409542/1464443588908679189/DADWADAWD_b.png?ex=69757cdf&is=69742b5f&hm=bd57e05581d676786bbc3aadf15aa6925322fceed22539673defaa480bc38389&=&format=webp&quality=lossless" 
+                <img src="https://cdn.discordapp.com/attachments/1464443523620409542/1464443588908679189/DADWADAWD_b.png?ex=69986c9f&is=69971b1f&hm=266c65757f37c5e04f42eb0ac2b037e8fcc4fa8395437450f21dbcbaec775938&" 
                      alt="Half-Life 2 Rebuild Logo" 
                      class="w-[400px] md:w-[650px] object-contain pointer-events-none drop-shadow-[0_0_35px_rgba(255,90,0,0.2)]" 
                      onerror="this.src='https://placehold.co/512x512/1a1f2e/orange?text=HL2R'">
@@ -420,4 +441,5 @@
     </script>
 </body>
 </html>
+
 
